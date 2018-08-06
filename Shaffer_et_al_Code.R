@@ -1,9 +1,9 @@
 ##############################################################################################################
 ##############################################################################################################
 ## R code for performing analyses done in the study: Endohyphal bacteria mitigate negative impacts of fungi on seeds of tropical trees
-## 2017
+## 2018
 ## Justin P. Shaffer
-## justinshaffer@email.arizona.edu
+## justinparkshaffer@gmail.com
 ##############################################################################################################
 ##############################################################################################################
 
@@ -22,6 +22,10 @@ install.packages("reshape2")
 install.packages("car")
 install.packages("multcomp")
 install.packages("pscl")
+install.packages("betareg")
+install.packages("lmtest")
+install.packages("AICcmodavg")
+
 library(tidyr)
 library(ggplot2)
 library(reshape)
@@ -30,6 +34,10 @@ library(car)
 library(multcomp)
 library(bear)
 library(pscl)
+library(betareg)
+library(lmtest)
+library(AICcmodavg)
+
 
 # Read in data, add needed extra columns, and create SE file for line and bar graphs
 ##############################################################################################################
@@ -119,12 +127,48 @@ ggplot(subset.nocontrols.SE, aes(ehb.f, y=col.combined.prop), ylim(0,1)) +
 
 # ANALYSES
 
-# Full analysis by isolate x ehb x species (generalized linear model with link function)
-glm.colcombinedprop.glm<-glm(cbind(col.combined.total, (total.count*4)-col.combined.total)~isolate*ehb.f*species, family=binomial(), data=subset.nocontrols)
-summary(glm.colcombinedprop.glm)
-anova.colcombinedprop.glm<- anova(glm.colcombinedprop.glm, test="Chisq")
-anova.colcombinedprop.glm
-pR2(glm.colcombinedprop.glm)
+# Full analysis by isolate x ehb x species (beta-regression with logit link function)
+subset.nocontrols$col.combined.prop.adj<-
+  (subset.nocontrols$col.combined.prop*(length(subset.nocontrols$col.combined.prop)- 1) + (1/2))/(length(subset.nocontrols$col.combined.prop))
+betareg.nocontrols.col.combined.prop.adj.full<-betareg(col.combined.prop.adj~isolate*ehb.f*species, data=subset.nocontrols, link = "logit")
+summary(betareg.nocontrols.col.combined.prop.adj.full)
+AICc(betareg.nocontrols.col.combined.prop.adj.full)
+
+# Reduced analysis 01 - plant species only (beta-regression with logit link function)
+betareg.nocontrols.col.combined.prop.adj.species<-betareg(col.combined.prop.adj~species, data=subset.nocontrols, link = "logit")
+summary(betareg.nocontrols.col.combined.prop.adj.species)
+AICc(betareg.nocontrols.col.combined.prop.adj.species)
+
+# Reduced analysis 02 - fungal identity only (beta-regression with logit link function)
+betareg.nocontrols.col.combined.prop.adj.isolate<-betareg(col.combined.prop.adj~isolate, data=subset.nocontrols, link = "logit")
+summary(betareg.nocontrols.col.combined.prop.adj.isolate)
+AICc(betareg.nocontrols.col.combined.prop.adj.isolate)
+
+# Reduced analysis 03 - EHB status only (beta-regression with logit link function)
+betareg.nocontrols.col.combined.prop.adj.ehb<-betareg(col.combined.prop.adj~ehb.f, data=subset.nocontrols, link = "logit")
+summary(betareg.nocontrols.col.combined.prop.adj.ehb)
+AICc(betareg.nocontrols.col.combined.prop.adj.ehb)
+
+# Reduced analysis 04 - plant species x fungal identity (beta-regression with logit link function)
+betareg.nocontrols.col.combined.prop.adj.isolate.species<-betareg(col.combined.prop.adj~isolate*species, data=subset.nocontrols, link = "logit")
+summary(betareg.nocontrols.col.combined.prop.adj.isolate.species)
+AICc(betareg.nocontrols.col.combined.prop.adj.isolate.species)
+
+# Reduced analysis 05 - fungal identity x EHB status (beta-regression with logit link function)
+betareg.nocontrols.col.combined.prop.adj.isolate.ehb<-betareg(col.combined.prop.adj~isolate*ehb.f, data=subset.nocontrols, link = "logit")
+summary(betareg.nocontrols.col.combined.prop.adj.isolate.ehb)
+AICc(betareg.nocontrols.col.combined.prop.adj.isolate.ehb)
+
+# Likelihood ratio test - full model vs. reduced 01
+lrtest(betareg.nocontrols.col.combined.prop.adj.full, 
+       betareg.nocontrols.col.combined.prop.adj.species, 
+       betareg.nocontrols.col.combined.prop.adj.isolate, 
+       betareg.nocontrols.col.combined.prop.adj.ehb, 
+       betareg.nocontrols.col.combined.prop.adj.isolate.species,
+       betareg.nocontrols.col.combined.prop.adj.isolate.ehb)
+
+# Likelihood ratio test - full model vs. reduced 02
+lrtest(betareg.nocontrols.col.combined.prop.adj.full, betareg.nocontrols.col.combined.prop.adj.isolate.ehb)
 
 # t-tests for comparing between EHB+ and EHB- strains of each fungal isolate for each plant species
 t.test(subset.nocontrols.362.At$col.combined.prop~subset.nocontrols.362.At$ehb)
@@ -238,12 +282,17 @@ ggplot(subset.noOp.noTm.germ7wkprop.SE, aes(ehb.f, y=germ.7wk.prop)) +
 
 # ANALYSES
 
-# Full analysis excluding controls (generalized linear model with link function)
+# Full analysis excluding controls (generalized linear model with logit link function and binomial distribution)
 glm.noOp.noTm.nocontrols.germtotalprop.glm<-glm(cbind(germ.7wk.count, ungerm.total.count-germ.7wk.count)~isolate*ehb.f*species, family=binomial(), data=subset.noOp.noTm.nocontrols)
 summary(glm.noOp.noTm.nocontrols.germtotalprop.glm)
 anova.noOp.noTm.nocontrols.germtotalprop.glm<- anova(glm.noOp.noTm.nocontrols.germtotalprop.glm, test="Chisq")
 anova.noOp.noTm.nocontrols.germtotalprop.glm
 pR2(glm.noOp.noTm.nocontrols.germtotalprop.glm)
+AICc(glm.noOp.noTm.nocontrols.germtotalprop.glm)
+
+# Full analysis excluding controls (generalized linear model with logit link function and quasibinomial distribution to detect overdispersion in the model above)
+glm.noOp.noTm.nocontrols.germtotalprop.glm.quasi<-glm(cbind(germ.7wk.count, ungerm.total.count-germ.7wk.count)~isolate*ehb.f*species, family=quasibinomial(), data=subset.noOp.noTm.nocontrols)
+summary(glm.noOp.noTm.nocontrols.germtotalprop.glm.quasi)
 
 # Create generalized linear model for Apeiba tibourbou, for Dunnett's test
 glm.At.germtotalprop.glm<- glm(cbind(germ.7wk.count, ungerm.total.count-germ.7wk.count)~isolate*ehb.f, family=binomial(), data=subset.At)
@@ -383,12 +432,17 @@ ggplot(subset.noOp.noTm.viable7wkprop.SE, aes(ehb.f, y=viable.7wk.prop)) +
 
 # ANALYSES
 
-# Full analysis excluding controls (generalized linear model with link function)
+# Full analysis excluding controls (generalized linear model with log link function and binomial distribution)
 glm.noOp.noTm.nocontrols.viabletotalprop.glm<-glm(cbind(viable.7wk.count, (viable.7wk.total-viable.7wk.count))~isolate*ehb.f*species, family=binomial(), data=subset.noOp.noTm.nocontrols)
 summary(glm.noOp.noTm.nocontrols.viabletotalprop.glm)
 anova.noOp.noTm.nocontrols.viabletotalprop.glm<- anova(glm.noOp.noTm.nocontrols.viabletotalprop.glm, test="Chisq")
 anova.noOp.noTm.nocontrols.viabletotalprop.glm
 pR2(glm.noOp.noTm.nocontrols.viabletotalprop.glm)
+AICc(glm.noOp.noTm.nocontrols.viabletotalprop.glm)
+
+# Full analysis excluding controls (generalized linear model with log link function and quasibinomial distribution for checking for overdispersion in the model above)
+glm.noOp.noTm.nocontrols.viabletotalprop.glm.quasi<-glm(cbind(viable.7wk.count, (viable.7wk.total-viable.7wk.count))~isolate*ehb.f*species, family=quasibinomial(), data=subset.noOp.noTm.nocontrols)
+summary(glm.noOp.noTm.nocontrols.viabletotalprop.glm.quasi)
 
 # Create linear model for Apeiba tibourbou, for Dunnett's test (will not work in GLM below due to zero variance in controls)
 lm.At.viabletotalprop.lm<- lm(viable.7wk.prop~isolate*ehb.f, data=subset.At)
