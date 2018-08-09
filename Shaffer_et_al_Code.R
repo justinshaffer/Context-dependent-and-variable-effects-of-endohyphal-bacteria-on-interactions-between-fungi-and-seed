@@ -11,7 +11,7 @@
 ##############################################################################################################
 
 # Replace the directory below with yours, where the data file exists.
-setwd("2016_Ch2_Seed/")
+setwd("path_to_data/")
 
 # You will need these packages;
 # You will also need the package "bear" which you will need to download and install a previous version of from:https://cran.r-project.org/web/packages/bear/index.html
@@ -300,6 +300,7 @@ summary(glm.At.germtotalprop.glm)
 anova.At.germtotalprop.glm<- anova(glm.At.germtotalprop.glm, test="Chisq")
 anova.At.germtotalprop.glm
 pR2(glm.At.germtotalprop.glm)
+AICc(glm.At.germtotalprop.glm)
 # Dunnett's tests (re-order isolates such that "control" is first and combine isolate and ehb columns
 subset.At$isolate <- factor(subset.At$isolate, levels=c("control", "PS0362a", "PS0768", "PS0772", "P0265", "P0277", "P0540"))
 subset.At$isolate.ehb.f <- paste(subset.At$isolate, subset.At$ehb.f)
@@ -313,6 +314,7 @@ summary(glm.Cl.germtotalprop.glm)
 anova.Cl.germtotalprop.glm<- anova(glm.Cl.germtotalprop.glm, test="Chisq")
 anova.Cl.germtotalprop.glm
 pR2(glm.Cl.germtotalprop.glm)
+AICc(glm.Cl.germtotalprop.glm)
 # Dunnett's tests (re-order isolates such that "control" is first and combine isolate and ehb columns
 subset.Cl$isolate <- factor(subset.Cl$isolate, levels=c("control", "PS0362a", "PS0768", "PS0772", "P0265", "P0277", "P0540"))
 subset.Cl$isolate.ehb.f <- paste(subset.Cl$isolate, subset.Cl$ehb.f)
@@ -326,6 +328,7 @@ summary(glm.Cp.germtotalprop.glm)
 anova.Cp.germtotalprop.glm<- anova(glm.Cp.germtotalprop.glm, test="Chisq")
 anova.Cp.germtotalprop.glm
 pR2(glm.Cp.germtotalprop.glm)
+AICc(glm.Cp.germtotalprop.glm)
 # Dunnett's tests (re-order isolates such that "control" is first and combine isolate and ehb columns
 subset.Cp$isolate <- factor(subset.Cp$isolate, levels=c("control", "PS0362a", "PS0768", "PS0772", "P0265", "P0277", "P0540"))
 subset.Cp$isolate.ehb.f <- paste(subset.Cp$isolate, subset.Cp$ehb.f)
@@ -444,9 +447,10 @@ AICc(glm.noOp.noTm.nocontrols.viabletotalprop.glm)
 glm.noOp.noTm.nocontrols.viabletotalprop.glm.quasi<-glm(cbind(viable.7wk.count, (viable.7wk.total-viable.7wk.count))~isolate*ehb.f*species, family=quasibinomial(), data=subset.noOp.noTm.nocontrols)
 summary(glm.noOp.noTm.nocontrols.viabletotalprop.glm.quasi)
 
-# Create linear model for Apeiba tibourbou, for Dunnett's test (will not work in GLM below due to zero variance in controls)
+# Create linear model for Apeiba tibourbou, for Dunnett's test (will not work in GLM below due to zero variance in controls, use for Dunnett's tests)
 lm.At.viabletotalprop.lm<- lm(viable.7wk.prop~isolate*ehb.f, data=subset.At)
 summary(lm.At.viabletotalprop.lm)
+AICc(lm.At.viabletotalprop.lm)
 anova.At.viabletotalprop.lm<- aov(lm.At.viabletotalprop.lm)
 summary(anova.At.viabletotalprop.lm)
 # Assess normality and equal variances which appear to be fine to proceed with Dunnett's test
@@ -460,12 +464,13 @@ lm.At.viabletotalprop.lm<- lm(viable.7wk.prop~isolate.ehb.f, data=subset.At)
 anova.At.viabletotalprop.lm<- aov(lm.At.viabletotalprop.lm)
 summary(glht(anova.At.viabletotalprop.lm, linfct=mcp(isolate.ehb.f="Dunnett")), test=adjusted("BH"))
 
-# Create generalized linear model for Apeiba tibourbou, for Dunnett's test (does not work due to zero variance in controls, use linear model above)
+# Create generalized linear model for Apeiba tibourbou, for Dunnett's test (does not work due to zero variance in controls, use only for assessing model fit)
 glm.At.viabletotalprop.glm<- glm(cbind(viable.7wk.count, (viable.7wk.total-viable.7wk.count))~isolate*ehb.f, family=binomial(), data=subset.At)
 summary(glm.At.viabletotalprop.glm)
 anova.At.viabletotalprop.glm<- anova(glm.At.viabletotalprop.glm, test="Chisq")
 anova.At.viabletotalprop.glm
 pR2(glm.At.viabletotalprop.glm)
+AICc(glm.At.viabletotalprop.glm)
 # Dunnett's tests (re-order isolates such that "control" is first and combine isolate and ehb columns)
 subset.At$isolate <- factor(subset.At$isolate, levels=c("control", "PS0362a", "PS0768", "PS0772", "P0265", "P0277", "P0540"))
 subset.At$isolate.ehb.f <- paste(subset.At$isolate, subset.At$ehb.f)
@@ -479,6 +484,7 @@ summary(glm.Cl.viabletotalprop.glm)
 anova.Cl.viabletotalprop.glm<- anova(glm.Cl.viabletotalprop.glm, test="Chisq")
 anova.Cl.viabletotalprop.glm
 pR2(glm.Cl.viabletotalprop.glm)
+AICc(glm.Cl.viabletotalprop.glm)
 # Dunnett's tests (re-order isolates such that "control" is first and combine isolate and ehb columns
 subset.Cl$isolate <- factor(subset.Cl$isolate, levels=c("control", "PS0362a", "PS0768", "PS0772", "P0265", "P0277", "P0540"))
 subset.Cl$isolate.ehb.f <- paste(subset.Cl$isolate, subset.Cl$ehb.f)
@@ -492,6 +498,7 @@ summary(glm.Cp.viabletotalprop.glm)
 anova.Cp.viabletotalprop.glm<- anova(glm.Cp.viabletotalprop.glm, test="Chisq")
 anova.Cp.viabletotalprop.glm
 pR2(glm.Cp.viabletotalprop.glm)
+AICc(glm.Cp.viabletotalprop.glm)
 # Dunnett's tests (re-order isolates such that "control" is first and combine isolate and ehb columns
 subset.Cp$isolate <- factor(subset.Cp$isolate, levels=c("control", "PS0362a", "PS0768", "PS0772", "P0265", "P0277", "P0540"))
 subset.Cp$isolate.ehb.f <- paste(subset.Cp$isolate, subset.Cp$ehb.f)
@@ -538,5 +545,43 @@ write.csv(table.2014.controls.viabletotalprop, file = "SummaryTable.2014.viabili
 ##############################################END OF SECTION##################################################
 
 
-###############################################END OF CODE####################################################
+##############################################################################################################
+# Analysis of correlation between colonization and effect sizes for germination and viability
+##############################################################################################################
 
+# Read in data
+effect.size.data<- read.csv("Shaffer_et_al_Effect_size_Data.csv")
+
+colonization.germination.lm<- lm(germination_effect_size~mean_proportion_colonization, data=effect.size.data)
+summary(colonization.germination.lm)
+anova.germination.lm<-aov(colonization.germination.lm)
+summary(anova.germination.lm)
+plot(anova.germination.lm, 1)
+plot(anova.germination.lm, 2)
+
+colonization.viability.lm<- lm(viability_effect_size~mean_proportion_colonization, data=effect.size.data)
+summary(colonization.viability.lm)
+anova.viability.lm<-aov(colonization.viability.lm)
+summary(anova.viability.lm)
+plot(anova.viability.lm, 1)
+plot(anova.viability.lm, 2)
+
+ggplot(effect.size.data, aes(x=effect.size.data$germination_effect_size, y=effect.size.data$mean_proportion_colonization)) +
+  geom_point() +
+  theme_bw() +
+  theme(text=element_text(size=24), axis.title.y=element_text(size=26), plot.title=element_text(size=26)) +
+  ylab("Mean colonization") +
+  xlab("Germination effect size")
+
+ggplot(effect.size.data, aes(x=effect.size.data$viability_effect_size, y=effect.size.data$mean_proportion_colonization)) +
+  geom_point() +
+  theme_bw() +
+  theme(text=element_text(size=24), axis.title.y=element_text(size=26), plot.title=element_text(size=26)) +
+  ylab("Mean colonization") +
+  xlab("Viability effect size")
+
+
+##############################################END OF SECTION##################################################
+
+
+###############################################END OF CODE####################################################
